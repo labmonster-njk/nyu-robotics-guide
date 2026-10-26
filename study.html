@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>로보틱스 세부분야 학습실</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 교수 필터 → 분야 타일 격자 → 선택 분야 상세(개념·식·읽을거리) → 손으로 돌려보는 데모 3개 */
+:root {
+  --bg: #f5f7f8;
+  --surface: #ffffff;
+  --fg: #172126;
+  --muted: #5b6a72;
+  --line: #d9e0e4;
+  --accent: #0f6b74;
+  --accent-soft: #e2f0f1;
+  --ok: #2c7a3f;
+  --ok-soft: #e1f2e5;
+  --bad: #a3322b;
+  --bad-soft: #f8e4e2;
+  --warn: #9a5b00;
+  --plot2: #b5541b;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11181b; --surface: #182226; --fg: #e3eaed; --muted: #95a6ae; --line: #2a373c;
+    --accent: #5cc3cc; --accent-soft: #173538; --ok: #7dd08f; --ok-soft: #1c3322;
+    --bad: #ec8a82; --bad-soft: #3a2220; --warn: #e5b158; --plot2: #f0a06b; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11181b; --surface: #182226; --fg: #e3eaed; --muted: #95a6ae; --line: #2a373c;
+  --accent: #5cc3cc; --accent-soft: #173538; --ok: #7dd08f; --ok-soft: #1c3322;
+  --bad: #ec8a82; --bad-soft: #3a2220; --warn: #e5b158; --plot2: #f0a06b; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 960px; margin: 0 auto; padding-block: 40px 72px; display: flex; flex-direction: column; gap: 40px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; line-height: 1.35; }
+h1 { font-size: 1.9rem; font-weight: 700; }
+h2 { font-size: 1.3rem; font-weight: 600; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; }
+a { color: var(--accent); text-underline-offset: 2px; }
+ul { margin: 0; padding-left: 1.2em; }
+li + li { margin-top: 3px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--muted); max-width: 68ch; }
+header, section { display: flex; flex-direction: column; gap: 14px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: inherit; font-size: 0.86rem; border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 4px 12px; border-radius: 99px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.progress { font-size: 0.88rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.tile { font: inherit; text-align: left; background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; min-width: 0; transition: opacity .15s, border-color .15s; }
+.tile:hover { border-color: var(--accent); }
+.tile[aria-current="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.tile.dim { opacity: 0.35; }
+.tile .code { font-family: var(--font-mono); font-size: 0.74rem; color: var(--muted); }
+.tile .t { font-weight: 600; }
+.tile .who { font-size: 0.8rem; color: var(--muted); }
+.tile .done { font-size: 0.74rem; color: var(--ok); font-weight: 600; }
+
+.detail { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px; display: flex; flex-direction: column; gap: 18px; }
+.detail-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 16px; }
+.detail-head h3 { font-size: 1.25rem; }
+.check { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; cursor: pointer; }
+.cols2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+.cols2 > div { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.label { font-size: 0.8rem; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; }
+.eq { font-family: var(--font-mono); font-size: 0.86rem; background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; overflow-x: auto; white-space: pre; }
+.why { font-size: 0.92rem; }
+.explain { font-size: 0.88rem; color: var(--muted); }
+.demolink { font-size: 0.9rem; }
+
+.demo { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; }
+@media (max-width: 720px) { .demo { grid-template-columns: 1fr; } .detail { padding: 16px; } h1 { font-size: 1.55rem; } }
+.demo canvas { width: 100%; display: block; border-radius: 8px; background: var(--bg); touch-action: none; }
+.ctrl { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.ctrl p { font-size: 0.92rem; }
+.slider { display: grid; grid-template-columns: 5.5em 1fr 4.2em; align-items: center; gap: 8px; font-size: 0.88rem; }
+.slider input { width: 100%; accent-color: var(--accent); }
+.slider output { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
+.readout { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 0.88rem; }
+.readout dt { color: var(--muted); }
+.readout dd { margin: 0; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.btn { font: inherit; font-size: 0.86rem; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; cursor: pointer; }
+.btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.flag { font-size: 0.85rem; padding: 4px 10px; border-radius: 6px; }
+.flag.warn { background: var(--bad-soft); color: var(--bad); }
+.flag.ok { background: var(--ok-soft); color: var(--ok); }
+footer { font-size: 0.82rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="eyebrow">NYU MAE 로보틱스 · 지원 준비용</div>
+  <h1>로보틱스 세부분야 학습실</h1>
+  <p class="lede">NYU 후보 교수들이 하는 연구를 8개 세부분야로 나눴습니다. 분야를 고르면 핵심 개념, 대표 식, 먼저 읽을 자료가 나옵니다. 아래 데모 3개는 직접 조작하면서 기구학·제어·경로계획을 감으로 익히는 용도입니다.</p>
+  <p><a href="index.html">교수 추천 페이지로 돌아가기</a></p>
+</header>
+
+<section aria-labelledby="map-h">
+  <h2 id="map-h">분야 지도</h2>
+  <div class="chips" id="profChips" role="group" aria-label="교수별로 보기"></div>
+  <p class="progress" id="progress"></p>
+  <div class="grid" id="grid"></div>
+  <article class="detail" id="detail" aria-live="polite"></article>
+</section>
+
+<section id="demo-arm" aria-labelledby="arm-h">
+  <h2 id="arm-h">데모 1 · 2링크 팔의 기구학과 특이점</h2>
+  <div class="demo">
+    <canvas id="armCanvas" width="480" height="480" aria-label="2링크 로봇팔. 드래그하면 끝점이 따라옵니다"></canvas>
+    <div class="ctrl">
+      <p>캔버스를 클릭하거나 드래그하면 역기구학(IK)으로 관절각을 구합니다. 슬라이더를 움직이면 순기구학(FK)입니다. 팔을 완전히 펴거나 접으면 자코비안 행렬식이 0에 가까워지는데, 이때 끝점이 특정 방향으로 움직일 수 없습니다(특이점).</p>
+      <label class="slider" for="th1"><span>θ₁ (°)</span><input id="th1" type="range" min="-180" max="180" step="1" value="35"><output id="th1o">35</output></label>
+      <label class="slider" for="th2"><span>θ₂ (°)</span><input id="th2" type="range" min="-180" max="180" step="1" value="70"><output id="th2o">70</output></label>
+      <div class="btns"><button class="btn" id="elbowBtn" type="button">팔꿈치: 위로</button></div>
+      <dl class="readout">
+        <dt>끝점 (x, y)</dt><dd id="armXY"></dd>
+        <dt>det J = L₁L₂ sin θ₂</dt><dd id="armDet"></dd>
+      </dl>
+      <div id="armFlag" class="flag ok"></div>
+      <p class="explain">L₁ = 1.0 m, L₂ = 0.8 m. 바깥 원은 도달 한계(L₁+L₂), 안쪽 원은 닿지 못하는 영역(|L₁−L₂|)입니다.</p>
+    </div>
+  </div>
+</section>
+
+<section id="demo-pd" aria-labelledby="pd-h">
+  <h2 id="pd-h">데모 2 · 관절 PD 제어의 계단 응답</h2>
+  <div class="demo">
+    <canvas id="pdCanvas" width="520" height="320" aria-label="PD 제어 계단 응답 그래프"></canvas>
+    <div class="ctrl">
+      <p>질량 m인 관절을 목표 위치 1로 옮깁니다. 제어 입력은 u = Kp(r − x) − Kd ẋ, 마찰 b = 0.2. Kp를 올리면 빨라지지만 출렁이고, Kd를 올리면 감쇠가 커집니다.</p>
+      <label class="slider" for="kp"><span>Kp</span><input id="kp" type="range" min="1" max="100" step="1" value="40"><output id="kpo">40</output></label>
+      <label class="slider" for="kd"><span>Kd</span><input id="kd" type="range" min="0" max="30" step="0.5" value="3"><output id="kdo">3</output></label>
+      <label class="slider" for="mass"><span>m (kg)</span><input id="mass" type="range" min="0.5" max="5" step="0.1" value="1"><output id="masso">1.0</output></label>
+      <dl class="readout">
+        <dt>고유진동수 ωₙ</dt><dd id="pdWn"></dd>
+        <dt>감쇠비 ζ</dt><dd id="pdZeta"></dd>
+        <dt>오버슈트</dt><dd id="pdOS"></dd>
+        <dt>2% 정착시간</dt><dd id="pdTs"></dd>
+      </dl>
+      <div class="btns"><button class="btn" id="critBtn" type="button">임계감쇠(ζ = 1)로 맞추기</button></div>
+    </div>
+  </div>
+</section>
+
+<section id="demo-plan" aria-labelledby="plan-h">
+  <h2 id="plan-h">데모 3 · 격자 경로계획: A* 대 Dijkstra</h2>
+  <div class="demo">
+    <canvas id="gridCanvas" width="528" height="308" aria-label="격자 지도. 클릭하면 벽을 놓거나 지웁니다"></canvas>
+    <div class="ctrl">
+      <p>칸을 클릭하면 벽을 놓거나 지웁니다. 두 알고리즘 모두 최단 경로를 찾지만, A*는 목표까지 남은 거리 추정(맨해튼 거리)을 써서 훨씬 적은 칸만 탐색합니다.</p>
+      <div class="btns">
+        <button class="btn primary" id="runA" type="button">A* 실행</button>
+        <button class="btn" id="runD" type="button">Dijkstra 실행</button>
+        <button class="btn" id="clearW" type="button">벽 모두 지우기</button>
+      </div>
+      <dl class="readout">
+        <dt>알고리즘</dt><dd id="plAlg"></dd>
+        <dt>탐색한 칸</dt><dd id="plExp"></dd>
+        <dt>경로 길이</dt><dd id="plLen"></dd>
+      </dl>
+      <p class="explain">연한 칸은 탐색한 칸, 진한 선이 찾은 경로입니다. 4방향 이동, 한 칸 비용 1.</p>
+    </div>
+  </div>
+</section>
+
+<footer>2026-10 기준으로 정리한 학습용 요약입니다. 교재와 논문은 원문으로 확인하세요. 진도 체크는 이 브라우저에만 저장됩니다.</footer>
+</main>
+
+<script>
+const PROFS = ["Obayashi", "Righetti", "Hao Su", "Rivière", "Chen Feng", "Joo H. Kim"];
+const TOPICS = [
+  { id: "kin", code: "KIN", title: "기구학·동역학", profs: ["Joo H. Kim", "Righetti"],
+    why: "모든 로봇 연구의 기본 문법입니다. 관절각과 끝점 위치의 관계(기구학), 힘과 운동의 관계(동역학)를 식으로 다룰 수 있어야 제어·계획·학습 논문을 읽을 수 있습니다.",
+    concepts: ["동차변환과 DH 표기, 지수좌표(PoE)", "순기구학·역기구학, 다해(팔꿈치 위/아래)", "자코비안과 특이점, 조작성", "라그랑주·뉴턴-오일러 동역학", "계산토크 제어, 토크제어 로봇"],
+    eq: "M(q) q̈ + C(q, q̇) q̇ + g(q) = τ\nẋ = J(q) q̇,   τ = Jᵀ(q) F",
+    read: [["Lynch & Park, Modern Robotics (무료 교재·강의 영상)", "https://hades.mech.northwestern.edu/index.php/Modern_Robotics"], ["Featherstone, Rigid Body Dynamics Algorithms", ""], ["Pinocchio 라이브러리 (Righetti 연구실이 쓰는 동역학 엔진)", "https://github.com/stack-of-tasks/pinocchio"]],
+    demo: "demo-arm" },
+  { id: "ctrl", code: "OPT", title: "최적제어·MPC", profs: ["Righetti"],
+    why: "Righetti 연구실의 중심 도구입니다. 비용함수를 최소화하는 궤적을 구하고, 이를 매 순간 다시 풀어 실시간 제어에 씁니다.",
+    concepts: ["LQR과 리카티 방정식", "궤적최적화: DDP/iLQR, 직접 콜로케이션", "모델 예측 제어(MPC): 이동 구간 최적화", "접촉이 있는 최적제어, 중심(centroidal) 동역학", "제어 장벽 함수(CBF)와 안전 제약"],
+    eq: "min Σₖ ℓ(xₖ, uₖ) + ℓ_f(x_N)\ns.t. xₖ₊₁ = f(xₖ, uₖ),  g(xₖ, uₖ) ≤ 0\n→ 첫 입력 u₀만 적용하고 다음 스텝에 다시 푼다",
+    read: [["Tedrake, Underactuated Robotics (MIT 강의노트, 무료)", "https://underactuated.mit.edu/"], ["Rawlings, Mayne & Diehl, Model Predictive Control: Theory, Computation, and Design", ""], ["Mastalli et al., Crocoddyl, ICRA 2020", "https://arxiv.org/abs/1909.04947"]],
+    demo: "demo-pd" },
+  { id: "legged", code: "LEG", title: "다리로봇·휴머노이드 균형", profs: ["Joo H. Kim", "Righetti"],
+    why: "Kim 교수의 균형 안정영역(basin) 연구와 Righetti 교수의 사족·휴머노이드 보행이 여기에 속합니다. 넘어지지 않는 조건을 수식으로 다룹니다.",
+    concepts: ["ZMP와 지지 다각형", "선형 역진자 모델(LIPM)", "캡처 포인트와 밀림 회복", "중심 운동량(centroidal momentum)", "균형 안정영역(basin of attraction)"],
+    eq: "LIPM:  ẍ = ω²(x − p),   ω = √(g / z₀)\n캡처 포인트:  ξ = x + ẋ / ω",
+    read: [["Kajita et al., Introduction to Humanoid Robotics (Springer)", ""], ["Pratt et al., Capture Point: A Step toward Humanoid Push Recovery, Humanoids 2006", ""], ["Joo H. Kim 연구실 논문 목록", "https://wp.nyu.edu/adol/"]] },
+  { id: "soft", code: "SOFT", title: "소프트로봇·유체-구조", profs: ["Obayashi", "Hao Su", "Chen Feng"],
+    why: "Obayashi 연구실의 핵심입니다. 부드러운 몸체가 큰 변형을 하며 주변 유체와 힘을 주고받는 현상을 설계·제어에 씁니다. 재료·유체역학 배경이 강점이 되는 분야입니다.",
+    concepts: ["초탄성 재료 모델(neo-Hookean, Ogden)", "공압·텐던·유압 소프트 액추에이터", "Cosserat 막대 이론으로 연속체 모델링", "체화 지능: 몸의 형태가 계산을 대신함", "물고기형 추진, Strouhal 수, 유체-구조 상호작용", "디지털 트윈과 실험 기반 최적화"],
+    eq: "Strouhal 수:  St = f·A / U   (효율적 수영 ≈ 0.2–0.4)\nneo-Hookean:  W = (μ/2)(I₁ − 3)",
+    read: [["Rus & Tolley, Design, fabrication and control of soft robots, Nature 2015", "https://doi.org/10.1038/nature14543"], ["Till, Aloi & Rucker, Real-time dynamics of soft and continuum robots based on Cosserat rod models, IJRR 2019", ""], ["Triantafyllou, Triantafyllou & Yue, Hydrodynamics of fishlike swimming, Annu. Rev. Fluid Mech. 2000", ""], ["Prema Lab (Obayashi)", "https://www.prema-lab.com/"]] },
+  { id: "mech", code: "MECH", title: "액추에이터·웨어러블·메카트로닉스", profs: ["Hao Su"],
+    why: "Hao Su 연구실의 바탕입니다. 모터·감속기·센서·전자회로를 묶어 사람 몸에 맞는 힘을 내는 장치를 만들고, 그 위에 제어를 얹습니다. 전자·기계 배경이 가장 직접 쓰이는 분야입니다.",
+    concepts: ["모터 토크밀도, 기어비와 역구동성", "준직접구동(QDD) 액추에이터", "직렬탄성 액추에이터(SEA)", "임피던스·어드미턴스 제어", "보행 생체역학과 대사비용 평가", "시뮬레이션 학습 기반 보조 제어"],
+    eq: "반사관성:  J_out = J_load + N²·J_motor\n임피던스:  F = K(x_d − x) + B(ẋ_d − ẋ)",
+    read: [["Luo, ..., Su, Experiment-free exoskeleton assistance via learning in simulation, Nature 2024", "https://doi.org/10.1038/s41586-024-07382-4"], ["Pratt & Williamson, Series elastic actuators, IROS 1995", ""], ["Hogan, Impedance Control (Part I–III), J. Dyn. Sys. Meas. Control 1985", ""], ["Wensing et al., Proprioceptive actuator design in the MIT Cheetah, IEEE T-RO 2017", ""]] },
+  { id: "plan", code: "PLAN", title: "동작계획·탐색", profs: ["Rivière", "Righetti"],
+    why: "Rivière 교수의 MCTS 연구가 여기에 속합니다. 장애물과 동역학 제약 속에서 어디로 어떻게 움직일지 정합니다.",
+    concepts: ["구성공간(C-space)", "그래프 탐색: Dijkstra, A*", "샘플링 기반: PRM, RRT, RRT*", "몬테카를로 트리탐색(MCTS)과 UCT", "불확실성 아래 계획: POMDP"],
+    eq: "A*:  f(n) = g(n) + h(n),   h는 실제 비용을 넘지 않아야 최적\nUCT:  argmax  Q̄ᵢ + c·√(ln N / nᵢ)",
+    read: [["LaValle, Planning Algorithms (무료 온라인 교재)", "https://lavalle.pl/planning/"], ["Kocsis & Szepesvári, Bandit based Monte-Carlo Planning, ECML 2006", ""], ["Rivière et al., MCTS with Spectral Expansion, Science Robotics 2024", ""]],
+    demo: "demo-plan" },
+  { id: "perc", code: "PERC", title: "지각·SLAM·3D 비전", profs: ["Chen Feng"],
+    why: "Chen Feng 연구실의 중심입니다. 카메라·라이다·촉각으로 주변을 인식하고, 지도를 만들면서 자기 위치를 추정합니다.",
+    concepts: ["핀홀 카메라 모델, 에피폴라 기하", "칼만 필터·확장 칼만 필터·파티클 필터", "포즈 그래프 SLAM과 루프 클로저", "점군 딥러닝, 3D 재구성(NeRF, 3D Gaussian Splatting)", "비전-힘·촉각 융합"],
+    eq: "칼만 이득:  K = P Hᵀ (H P Hᵀ + R)⁻¹\n그래프 SLAM:  min Σ ‖ e_ij(x_i, x_j) ‖²_Ω",
+    read: [["Thrun, Burgard & Fox, Probabilistic Robotics", ""], ["Hartley & Zisserman, Multiple View Geometry in Computer Vision", ""], ["Cadena et al., Past, Present, and Future of SLAM, IEEE T-RO 2016", "https://arxiv.org/abs/1606.05830"], ["AI4CE Lab (Chen Feng)", "https://ai4ce.github.io/"]] },
+  { id: "learn", code: "LEARN", title: "로봇학습·월드모델", profs: ["Righetti", "Rivière", "Chen Feng", "Hao Su"],
+    why: "2024년 이후 거의 모든 후보 교수가 학습을 결합하고 있습니다. Righetti·Rivière의 월드모델, Hao Su의 시뮬레이션 학습 제어가 대표적입니다.",
+    concepts: ["MDP, 가치함수, 정책경사(PPO)", "모델기반 RL과 월드모델", "모방학습, 확산정책(Diffusion Policy)", "sim-to-real과 도메인 랜덤화", "미분가능 시뮬레이션"],
+    eq: "J(θ) = E_τ~πθ [ Σₜ γᵗ r(sₜ, aₜ) ]\n∇J = E [ ∇ log πθ(a|s) · A(s, a) ]",
+    read: [["Sutton & Barto, Reinforcement Learning: An Introduction (무료)", "http://incompleteideas.net/book/the-book-2nd.html"], ["Chi et al., Diffusion Policy, RSS 2023", "https://arxiv.org/abs/2303.04137"], ["Hafner et al., Mastering Diverse Domains through World Models (DreamerV3)", "https://arxiv.org/abs/2301.04104"]] }
+];
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+let done = store.get("rs-done", {});
+let current = store.get("rs-current", "soft");
+let filter = null;
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function renderChips() {
+  const box = $("profChips");
+  box.innerHTML = "";
+  [null, ...PROFS].forEach((p) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip";
+    b.textContent = p || "전체";
+    b.setAttribute("aria-pressed", String(filter === p));
+    b.onclick = () => { filter = p; renderChips(); renderGrid(); };
+    box.appendChild(b);
+  });
+}
+function renderGrid() {
+  const g = $("grid");
+  g.innerHTML = "";
+  TOPICS.forEach((t) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "tile";
+    if (filter && !t.profs.includes(filter)) b.classList.add("dim");
+    b.setAttribute("aria-current", String(t.id === current));
+    b.innerHTML = `<span class="code">${t.code}</span><span class="t">${esc(t.title)}</span><span class="who">${esc(t.profs.join(" · "))}</span>${done[t.id] ? '<span class="done">공부함</span>' : ""}`;
+    b.onclick = () => { current = t.id; store.set("rs-current", current); renderGrid(); renderDetail(); };
+    g.appendChild(b);
+  });
+  const n = TOPICS.filter((t) => done[t.id]).length;
+  $("progress").textContent = `진도: ${TOPICS.length}개 분야 중 ${n}개 공부함`;
+}
+function renderDetail() {
+  const t = TOPICS.find((x) => x.id === current) || TOPICS[0];
+  const d = $("detail");
+  const reads = t.read.map(([n, u]) => u ? `<li><a href="${u}" target="_blank" rel="noopener">${esc(n)}</a></li>` : `<li>${esc(n)}</li>`).join("");
+  d.innerHTML = `
+    <div class="detail-head">
+      <h3>${esc(t.title)}</h3>
+      <label class="check" for="doneBox"><input type="checkbox" id="doneBox" ${done[t.id] ? "checked" : ""}> 공부함으로 표시</label>
+    </div>
+    <p class="why">${esc(t.why)}</p>
+    <div class="cols2">
+      <div><span class="label">핵심 개념</span><ul>${t.concepts.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></div>
+      <div><span class="label">대표 식</span><div class="eq">${esc(t.eq)}</div>
+        ${t.demo ? `<a class="demolink" href="#${t.demo}">관련 데모로 가서 직접 돌려 보기</a>` : ""}</div>
+    </div>
+    <div><span class="label">먼저 읽을 것</span><ul>${reads}</ul></div>
+    `;
+  $("doneBox").onchange = (e) => { done[t.id] = e.target.checked; store.set("rs-done", done); renderGrid(); };
+}
+
+/* ---------- 공통: 캔버스 색과 해상도 ---------- */
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function fit(cv) {
+  if (!cv.dataset.ratio) cv.dataset.ratio = cv.height / cv.width;
+  const r = window.devicePixelRatio || 1, w = cv.clientWidth, h = w * cv.dataset.ratio;
+  cv.width = Math.round(w * r); cv.height = Math.round(h * r);
+  cv.style.height = h + "px";
+  const ctx = cv.getContext("2d"); ctx.setTransform(r, 0, 0, r, 0, 0);
+  return { ctx, w, h };
+}
+
+/* ---------- 데모 1: 2링크 팔 ---------- */
+const L1 = 1.0, L2 = 0.8;
+let elbowUp = true;
+const arm = $("armCanvas");
+function drawArm() {
+  const { ctx, w, h } = fit(arm);
+  const s = w / 4.2, ox = w / 2, oy = h / 2;
+  const th1 = +$("th1").value * Math.PI / 180, th2 = +$("th2").value * Math.PI / 180;
+  $("th1o").textContent = $("th1").value; $("th2o").textContent = $("th2").value;
+  ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = css("--line"); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
+  ctx.setLineDash([4, 4]);
+  [L1 + L2, Math.abs(L1 - L2)].forEach((r) => { ctx.beginPath(); ctx.arc(ox, oy, r * s, 0, 2 * Math.PI); ctx.stroke(); });
+  ctx.setLineDash([]);
+  const x1 = L1 * Math.cos(th1), y1 = L1 * Math.sin(th1);
+  const x2 = x1 + L2 * Math.cos(th1 + th2), y2 = y1 + L2 * Math.sin(th1 + th2);
+  const P = (x, y) => [ox + x * s, oy - y * s];
+  ctx.lineCap = "round"; ctx.lineWidth = 10;
+  ctx.strokeStyle = css("--accent");
+  ctx.beginPath(); ctx.moveTo(...P(0, 0)); ctx.lineTo(...P(x1, y1)); ctx.stroke();
+  ctx.strokeStyle = css("--plot2");
+  ctx.beginPath(); ctx.moveTo(...P(x1, y1)); ctx.lineTo(...P(x2, y2)); ctx.stroke();
+  [[0, 0], [x1, y1]].forEach(([x, y]) => { ctx.fillStyle = css("--surface"); ctx.beginPath(); ctx.arc(...P(x, y), 6, 0, 2 * Math.PI); ctx.fill(); ctx.strokeStyle = css("--fg"); ctx.lineWidth = 2; ctx.stroke(); });
+  ctx.fillStyle = css("--fg"); ctx.beginPath(); ctx.arc(...P(x2, y2), 5, 0, 2 * Math.PI); ctx.fill();
+  const det = L1 * L2 * Math.sin(th2);
+  $("armXY").textContent = `(${x2.toFixed(2)}, ${y2.toFixed(2)}) m`;
+  $("armDet").textContent = det.toFixed(3);
+  const f = $("armFlag");
+  if (Math.abs(det) < 0.08) { f.className = "flag warn"; f.textContent = "특이점 근처: 끝점이 팔 방향으로는 거의 움직이지 못합니다."; }
+  else { f.className = "flag ok"; f.textContent = "특이점에서 멀리 있음: 끝점을 모든 방향으로 움직일 수 있습니다."; }
+}
+function ikTo(ev) {
+  const r = arm.getBoundingClientRect();
+  const w = r.width, h = r.height, s = w / 4.2;
+  let x = (ev.clientX - r.left - w / 2) / s, y = -(ev.clientY - r.top - h / 2) / s;
+  let d = Math.hypot(x, y);
+  const dmax = L1 + L2 - 1e-6, dmin = Math.abs(L1 - L2) + 1e-6;
+  if (d < 1e-9) { x = dmin; y = 0; d = dmin; }
+  const dc = Math.min(dmax, Math.max(dmin, d)); x *= dc / d; y *= dc / d;
+  const c2 = Math.max(-1, Math.min(1, (x * x + y * y - L1 * L1 - L2 * L2) / (2 * L1 * L2)));
+  const th2 = (elbowUp ? 1 : -1) * Math.acos(c2);
+  const th1 = Math.atan2(y, x) - Math.atan2(L2 * Math.sin(th2), L1 + L2 * Math.cos(th2));
+  const deg = (a) => { let v = a * 180 / Math.PI; while (v > 180) v -= 360; while (v < -180) v += 360; return Math.round(v); };
+  $("th1").value = deg(th1); $("th2").value = deg(th2);
+  drawArm();
+}
+let dragging = false;
+arm.addEventListener("pointerdown", (e) => { dragging = true; arm.setPointerCapture(e.pointerId); ikTo(e); });
+arm.addEventListener("pointermove", (e) => { if (dragging) ikTo(e); });
+arm.addEventListener("pointerup", () => { dragging = false; });
+$("th1").oninput = drawArm; $("th2").oninput = drawArm;
+$("elbowBtn").onclick = () => {
+  elbowUp = !elbowUp;
+  $("elbowBtn").textContent = "팔꿈치: " + (elbowUp ? "위로" : "아래로");
+  const th1 = +$("th1").value * Math.PI / 180, th2 = +$("th2").value * Math.PI / 180;
+  const x = L1 * Math.cos(th1) + L2 * Math.cos(th1 + th2), y = L1 * Math.sin(th1) + L2 * Math.sin(th1 + th2);
+  const r = arm.getBoundingClientRect(), s = r.width / 4.2;
+  ikTo({ clientX: r.left + r.width / 2 + x * s, clientY: r.top + r.height / 2 - y * s });
+};
+
+/* ---------- 데모 2: PD 계단 응답 ---------- */
+const pd = $("pdCanvas");
+const B = 0.2, T = 4, DT = 0.001;
+function simPD(kp, kd, m) {
+  let x = 0, v = 0; const out = [];
+  for (let i = 0; i <= T / DT; i++) {
+    if (i % 10 === 0) out.push([i * DT, x]);
+    const u = kp * (1 - x) - kd * v;
+    v += DT * (u - B * v) / m; x += DT * v;
+  }
+  return out;
+}
+function drawPD() {
+  const kp = +$("kp").value, kd = +$("kd").value, m = +$("mass").value;
+  $("kpo").textContent = kp; $("kdo").textContent = kd; $("masso").textContent = m.toFixed(1);
+  const data = simPD(kp, kd, m);
+  const { ctx, w, h } = fit(pd);
+  const padL = 36, padR = 10, padT = 12, padB = 26;
+  const ymax = Math.max(1.6, Math.min(2.5, Math.max(...data.map((p) => p[1])) * 1.05));
+  const X = (t) => padL + (t / T) * (w - padL - padR);
+  const Y = (y) => padT + (1 - y / ymax) * (h - padT - padB);
+  ctx.clearRect(0, 0, w, h);
+  ctx.font = "11px " + css("--font-mono"); ctx.fillStyle = css("--muted"); ctx.strokeStyle = css("--line"); ctx.lineWidth = 1;
+  for (let t = 0; t <= T; t++) { ctx.beginPath(); ctx.moveTo(X(t), padT); ctx.lineTo(X(t), h - padB); ctx.stroke(); ctx.fillText(t + "s", X(t) - 6, h - 8); }
+  for (let y = 0; y <= ymax + 1e-9; y += 0.5) { ctx.beginPath(); ctx.moveTo(padL, Y(y)); ctx.lineTo(w - padR, Y(y)); ctx.stroke(); ctx.fillText(y.toFixed(1), 4, Y(y) + 4); }
+  ctx.fillStyle = css("--ok-soft");
+  ctx.fillRect(padL, Y(1.02), w - padL - padR, Y(0.98) - Y(1.02));
+  ctx.setLineDash([5, 4]); ctx.strokeStyle = css("--muted"); ctx.beginPath(); ctx.moveTo(padL, Y(1)); ctx.lineTo(w - padR, Y(1)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle = css("--accent"); ctx.lineWidth = 2.5; ctx.beginPath();
+  data.forEach(([t, y], i) => { const yy = Math.min(y, ymax); i ? ctx.lineTo(X(t), Y(yy)) : ctx.moveTo(X(t), Y(yy)); });
+  ctx.stroke();
+  const last = data[data.length - 1]; ctx.fillStyle = css("--accent"); ctx.beginPath(); ctx.arc(X(last[0]), Y(Math.min(last[1], ymax)), 4, 0, 2 * Math.PI); ctx.fill();
+  const wn = Math.sqrt(kp / m), zeta = (kd + B) / (2 * Math.sqrt(kp * m));
+  const peak = Math.max(...data.map((p) => p[1]));
+  let ts = null;
+  for (let i = data.length - 1; i >= 0; i--) { if (Math.abs(data[i][1] - 1) > 0.02) { ts = i === data.length - 1 ? null : data[i + 1][0]; break; } if (i === 0) ts = 0; }
+  $("pdWn").textContent = wn.toFixed(2) + " rad/s";
+  $("pdZeta").textContent = zeta.toFixed(2) + (zeta < 1 ? " (부족감쇠)" : zeta > 1.02 ? " (과감쇠)" : " (임계감쇠)");
+  $("pdOS").textContent = Math.max(0, (peak - 1) * 100).toFixed(1) + " %";
+  $("pdTs").textContent = ts === null ? "4 s 안에 정착 안 함" : ts.toFixed(2) + " s";
+}
+["kp", "kd", "mass"].forEach((id) => $(id).oninput = drawPD);
+$("critBtn").onclick = () => {
+  const kp = +$("kp").value, m = +$("mass").value;
+  $("kd").value = Math.max(0, Math.min(30, Math.round((2 * Math.sqrt(kp * m) - B) * 2) / 2));
+  drawPD();
+};
+
+/* ---------- 데모 3: A* vs Dijkstra ---------- */
+const COLS = 24, ROWS = 14, START = [2, 7], GOAL = [21, 7];
+const gcv = $("gridCanvas");
+let walls = new Set();
+[[8, 2], [8, 3], [8, 4], [8, 5], [8, 6], [8, 7], [8, 8], [8, 9], [14, 4], [14, 5], [14, 6], [14, 7], [14, 8], [14, 9], [14, 10], [14, 11], [15, 4], [16, 4], [17, 4]].forEach(([c, r]) => walls.add(c + "," + r));
+let lastRun = null;
+function search(useH) {
+  const key = (c, r) => c + "," + r;
+  const hfn = (c, r) => useH ? Math.abs(c - GOAL[0]) + Math.abs(r - GOAL[1]) : 0;
+  const g = { [key(...START)]: 0 }, prev = {}, closed = new Set();
+  const open = [[hfn(...START), 0, START[0], START[1]]];
+  let order = 0;
+  while (open.length) {
+    open.sort((a, b) => a[0] - b[0] || b[1] - a[1]);
+    const [, , c, r] = open.shift(); const k = key(c, r);
+    if (closed.has(k)) continue;
+    closed.add(k);
+    if (c === GOAL[0] && r === GOAL[1]) break;
+    for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nc = c + dc, nr = r + dr, nk = key(nc, nr);
+      if (nc < 0 || nr < 0 || nc >= COLS || nr >= ROWS || walls.has(nk) || closed.has(nk)) continue;
+      const ng = g[k] + 1;
+      if (g[nk] === undefined || ng < g[nk]) { g[nk] = ng; prev[nk] = k; open.push([ng + hfn(nc, nr), ++order, nc, nr]); }
+    }
+  }
+  const gk = key(...GOAL); const path = [];
+  if (g[gk] !== undefined && closed.has(gk)) { let k = gk; while (k) { path.unshift(k); k = prev[k]; } }
+  return { closed, path, name: useH ? "A* (맨해튼 휴리스틱)" : "Dijkstra" };
+}
+function drawGrid() {
+  const { ctx, w } = fit(gcv);
+  const cs = w / COLS;
+  ctx.clearRect(0, 0, w, cs * ROWS);
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
+    const k = c + "," + r;
+    ctx.fillStyle = walls.has(k) ? css("--fg") : lastRun && lastRun.closed.has(k) ? css("--accent-soft") : css("--bg");
+    ctx.fillRect(c * cs, r * cs, cs, cs);
+    ctx.strokeStyle = css("--line"); ctx.lineWidth = 0.5; ctx.strokeRect(c * cs, r * cs, cs, cs);
+  }
+  if (lastRun && lastRun.path.length) {
+    ctx.strokeStyle = css("--accent"); ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.beginPath();
+    lastRun.path.forEach((k, i) => { const [c, r] = k.split(",").map(Number); const x = (c + 0.5) * cs, y = (r + 0.5) * cs; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    ctx.stroke();
+  }
+  [[START, css("--ok"), "S"], [GOAL, css("--plot2"), "G"]].forEach(([[c, r], col, t]) => {
+    ctx.fillStyle = col; ctx.beginPath(); ctx.arc((c + 0.5) * cs, (r + 0.5) * cs, cs * 0.38, 0, 2 * Math.PI); ctx.fill();
+    ctx.fillStyle = css("--bg"); ctx.font = `600 ${Math.round(cs * 0.45)}px ` + css("--font-mono"); ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(t, (c + 0.5) * cs, (r + 0.5) * cs + 1);
+  });
+  ctx.textAlign = "start"; ctx.textBaseline = "alphabetic";
+  $("plAlg").textContent = lastRun ? lastRun.name : "-";
+  $("plExp").textContent = lastRun ? lastRun.closed.size + " 칸" : "-";
+  $("plLen").textContent = lastRun ? (lastRun.path.length ? (lastRun.path.length - 1) + " 칸" : "경로 없음") : "-";
+}
+gcv.addEventListener("click", (e) => {
+  const r = gcv.getBoundingClientRect(), cs = r.width / COLS;
+  const c = Math.floor((e.clientX - r.left) / cs), rr = Math.floor((e.clientY - r.top) / cs);
+  if ((c === START[0] && rr === START[1]) || (c === GOAL[0] && rr === GOAL[1])) return;
+  const k = c + "," + rr; walls.has(k) ? walls.delete(k) : walls.add(k);
+  if (lastRun) lastRun = search(lastRun.name.startsWith("A*"));
+  drawGrid();
+});
+$("runA").onclick = () => { lastRun = search(true); drawGrid(); };
+$("runD").onclick = () => { lastRun = search(false); drawGrid(); };
+$("clearW").onclick = () => { walls = new Set(); if (lastRun) lastRun = search(lastRun.name.startsWith("A*")); drawGrid(); };
+
+/* ---------- 시작 ---------- */
+function drawAll() { drawArm(); drawPD(); drawGrid(); }
+renderChips(); renderGrid(); renderDetail();
+lastRun = search(true);
+drawAll();
+window.addEventListener("resize", drawAll);
+const mq = window.matchMedia("(prefers-color-scheme: dark)");
+if (mq.addEventListener) mq.addEventListener("change", drawAll);
+new MutationObserver(drawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+</script>
+
+</body>
+</html>

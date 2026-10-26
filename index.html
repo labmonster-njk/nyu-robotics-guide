@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NYU MAE 로보틱스 지도교수 후보</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 한 단 문서. 상단 결정표 → 순위표 → 교수별 프로필 카드 → 보조 후보 → 지원 메모 → 근거 */
+:root {
+  --bg: #f5f7f8;
+  --surface: #ffffff;
+  --fg: #172126;
+  --muted: #5b6a72;
+  --line: #d9e0e4;
+  --accent: #0f6b74;
+  --accent-soft: #e2f0f1;
+  --warn: #9a5b00;
+  --warn-soft: #fbf0dc;
+  --bad: #a3322b;
+  --bad-soft: #f8e4e2;
+  --font-display: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11181b; --surface: #182226; --fg: #e3eaed; --muted: #95a6ae; --line: #2a373c;
+    --accent: #5cc3cc; --accent-soft: #173538; --warn: #e5b158; --warn-soft: #33291a;
+    --bad: #ec8a82; --bad-soft: #3a2220; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11181b; --surface: #182226; --fg: #e3eaed; --muted: #95a6ae; --line: #2a373c;
+  --accent: #5cc3cc; --accent-soft: #173538; --warn: #e5b158; --warn-soft: #33291a;
+  --bad: #ec8a82; --bad-soft: #3a2220; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 860px; margin: 0 auto; padding-block: 40px 72px; display: flex; flex-direction: column; gap: 44px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.35; }
+h1 { font-size: 1.9rem; font-weight: 700; }
+h2 { font-size: 1.3rem; font-weight: 600; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+h3 { font-size: 1.12rem; font-weight: 600; }
+p { margin: 0; }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+ul { margin: 0; padding-left: 1.2em; }
+li + li { margin-top: 4px; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--muted); max-width: 65ch; }
+header { display: flex; flex-direction: column; gap: 12px; }
+section { display: flex; flex-direction: column; gap: 16px; }
+.toc { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.9rem; }
+.note { border-radius: 8px; padding: 12px 16px; font-size: 0.92rem; }
+.note.assume { background: var(--accent-soft); }
+.note.warn { background: var(--warn-soft); }
+.note.bad { background: var(--bad-soft); }
+.note strong { font-weight: 600; }
+
+.pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.pick > div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.pick .k { font-size: 0.82rem; color: var(--muted); }
+.pick .v { font-family: var(--font-display); font-weight: 600; font-size: 1.08rem; }
+.pick .w { font-size: 0.88rem; color: var(--muted); }
+
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 720px; font-size: 0.9rem; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+td.rank { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--muted); }
+td.name { font-weight: 600; white-space: nowrap; }
+.pill { display: inline-block; font-size: 0.76rem; padding: 1px 8px; border-radius: 99px; white-space: nowrap; font-weight: 500; }
+.pill.hi { background: var(--accent-soft); color: var(--accent); }
+.pill.mid { background: var(--warn-soft); color: var(--warn); }
+.pill.lo { background: var(--line); color: var(--muted); }
+tr.sub td { color: var(--muted); }
+
+.prof { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
+.prof-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.prof-head .meta { font-size: 0.88rem; color: var(--muted); }
+.links { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 0.86rem; }
+dl { margin: 0; display: grid; grid-template-columns: 7.5em 1fr; gap: 8px 14px; }
+dt { font-size: 0.84rem; color: var(--muted); font-weight: 500; padding-top: 1px; }
+dd { margin: 0; min-width: 0; }
+.papers li { font-size: 0.9rem; }
+.papers em { font-style: italic; }
+@media (max-width: 560px) {
+  dl { grid-template-columns: 1fr; gap: 2px; }
+  dd { margin-bottom: 8px; }
+  .prof { padding: 16px; }
+  h1 { font-size: 1.55rem; }
+}
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.cols > div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; font-size: 0.9rem; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.cols h3 { font-size: 1rem; }
+ol.steps { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 8px; }
+.subject { font-family: var(--font-mono); font-size: 0.8rem; background: var(--accent-soft); color: var(--accent); padding: 1px 6px; border-radius: 4px; }
+footer { font-size: 0.82rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="eyebrow">NYU Tandon MAE · 2026-10-26 조사</div>
+  <h1>NYU 기계과(MAE) 로보틱스 지도교수 후보</h1>
+  <p class="lede">전자·기계·로보틱스·소프트로보틱스 분야로 NYU 교수 18명의 논문과 최근 연구 흐름을 훑고, 지도교수 후보를 순위로 정리했습니다.</p>
+  <nav class="toc" aria-label="목차">
+    <a href="#pick">관심별 1순위</a><a href="#rank">추천 순위</a><a href="#creo">CREO</a>
+    <a href="#obayashi">Obayashi</a><a href="#righetti">Righetti</a><a href="#su">Hao Su</a>
+    <a href="#riviere">Rivière</a><a href="#feng">Chen Feng</a><a href="#kim">Joo H. Kim</a>
+    <a href="#others">보조 후보</a><a href="#apply">지원 메모</a><a href="#sources">근거</a>
+  </nav>
+  <div class="note assume"><strong>전공지식 공부:</strong> 후보 교수들의 세부분야를 개념·식·조작 데모로 익히는 <a href="study.html">로보틱스 세부분야 학습실</a>을 따로 만들었습니다.</div>
+  <div class="note assume"><strong>가정:</strong> 전자·기계 배경으로 박사(또는 석사→박사) 과정에 지원한다고 가정했습니다. 조사는 NYU 프로필, 연구실 사이트, Google Scholar, arXiv, OpenAlex, NSF 자료로 했습니다. 이적·겸직 정보는 지원 전에 본인에게 직접 확인해야 합니다.</div>
+</header>
+
+<section id="pick">
+  <h2>관심 분야별 1순위</h2>
+  <div class="pick">
+    <div><span class="k">소프트로봇</span><span class="v">Nana Obayashi</span><span class="w">MAE에서 소프트로봇을 하는 유일한 교수. 매년 가을 박사 1–2명 모집</span></div>
+    <div><span class="k">다리로봇·제어</span><span class="v">Ludovic Righetti</span><span class="w">MAE 로보틱스의 중심. 최적제어에서 월드모델·RL로 확장 중</span></div>
+    <div><span class="k">전자·액추에이터·웨어러블</span><span class="v">Hao Su</span><span class="w">하드웨어부터 RL 제어까지 직접. 단, BME 경유 가능성 큼</span></div>
+  </div>
+  <p><strong>공동지도 조합:</strong> 소프트로봇이면 Obayashi(주)와 Chen Feng(소프트 센싱) 또는 Righetti(제어). 전자·메카트로닉스면 Hao Su(주, BME)와 Righetti 또는 Kim(MAE 쪽 연결).</p>
+</section>
+
+<section id="rank">
+  <h2>추천 순위</h2>
+  <p class="lede">"MAE 소속 + 전자·기계·소프트 전반"을 기준으로 한 기본 순서입니다.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>순위</th><th>교수</th><th>소속</th><th>분야</th><th>적합도</th><th>이유</th></tr></thead>
+    <tbody>
+      <tr><td class="rank">1</td><td class="name"><a href="#obayashi">Nana Obayashi</a></td><td>MAE 조교수 (2026 연구실 개설)</td><td>소프트로봇·유체</td><td><span class="pill hi">높음</span></td><td>소프트로보틱스를 하는 유일한 MAE 교수. 매년 가을 박사 1–2명 모집</td></tr>
+      <tr><td class="rank">2</td><td class="name"><a href="#righetti">Ludovic Righetti</a></td><td>MAE·ECE 교수, CREO 공동센터장</td><td>다리로봇·조작 최적제어</td><td><span class="pill hi">높음</span></td><td>하드웨어 실험도 하지만 수학·최적화 비중이 큼</td></tr>
+      <tr><td class="rank">3</td><td class="name"><a href="#su">Hao Su</a></td><td>BME 부교수 (MAE 소속 아님)</td><td>엑소스켈레톤·액추에이터·소프트 웨어러블</td><td><span class="pill hi">높음</span> BME 경유</td><td>전자·기계·메카트로닉스에 가장 잘 맞음. 박사 장학생 공고</td></tr>
+      <tr><td class="rank">4</td><td class="name"><a href="#riviere">Benjamin Rivière</a></td><td>MAE·Courant CS 조교수 (2025 부임)</td><td>계획·학습·우주로봇</td><td><span class="pill mid">중상</span></td><td>신임이라 첫 학생을 뽑는 중. Join 페이지가 명시적</td></tr>
+      <tr><td class="rank">5</td><td class="name"><a href="#feng">Chen Feng</a></td><td>MAE·CSE·CUE 부교수, CREO 공동센터장</td><td>3D 비전·SLAM·조립</td><td><span class="pill mid">중상</span></td><td>MAE 박사생 지도 가능. 소프트로봇 고유감각 논문 있음. 핵심은 비전·ML</td></tr>
+      <tr><td class="rank">6</td><td class="name"><a href="#kim">Joo H. Kim</a></td><td>MAE 부교수</td><td>휴머노이드 균형·동역학 최적화</td><td><span class="pill mid">중</span></td><td>동역학·최적화가 강점. 소규모, 하드웨어 비중 작음</td></tr>
+      <tr class="sub"><td class="rank">보조</td><td class="name">Farshad Khorrami</td><td>ECE 교수</td><td>무인기 메카트로닉스·CBF 안전제어</td><td><span class="pill mid">중</span></td><td>하드웨어 있음. ECE 소속, CREO 명단에 없음</td></tr>
+      <tr class="sub"><td class="rank">보조</td><td class="name">Vikram Kapila</td><td>MAE 교수</td><td>혼합현실 HRI·재활 웨어러블</td><td><span class="pill lo">중하</span></td><td>메카트로닉스 석사 과정을 만든 사람. 지금은 그룹이 작음</td></tr>
+      <tr class="sub"><td class="rank">보조</td><td class="name">Maurizio Porfiri</td><td>MAE·BME Institute Prof.</td><td>로봇물고기(과거)·군집 제어</td><td><span class="pill lo">중하</span></td><td>지금은 도시과학·네트워크 동역학 중심, 행정 보직 많음</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note bad"><strong>제외 (2026-10 기준 NYU에서 지도받을 수 없음)</strong>
+    <ul>
+      <li><strong>Giuseppe Loianno</strong>(공중로봇): 2025년 UC Berkeley EECS로 이적.</li>
+      <li><strong>S. Farokh Atashzar</strong>(의료로봇·햅틱): 연구실 공식 약력에 NYU 재직이 2019-08~2024-11로 과거형. Amazon Robotics 소속은 Scholar 표기로만 확인.</li>
+    </ul>
+  </div>
+  <div class="note warn"><strong>확인 필요:</strong> <strong>Lerrel Pinto</strong>(Courant CS, 로봇학습·촉각센서·손). 2026-05 Meta가 ARI를 인수하면서 Meta Superintelligence Labs에 합류했지만, 본인 홈페이지에는 NYU GRAIL을 계속 운영한다고 적혀 있습니다. 새 학생을 받는지는 확인하지 못했습니다.</div>
+  <p><strong>스트레처블 전자소자·로봇 재료</strong> 쪽에서 로봇을 함께 하는 Tandon 정년트랙 교원은 찾지 못했습니다. 가까운 사람은 ECE의 Davood Shahrjerdi(유연·생체전자 소자, 로봇 연구는 없음)와 Rui Li(Industry Assistant Professor, 의료·재활로봇)입니다. Rui Li가 맡는 학부 VIP팀 <a href="https://engineering.nyu.edu/research/student-research/vertically-integrated-projects/vip-teams/flexible-ai-enabled-mechatronic-systems-lab-fams">FAMS</a>가 소프트 구조와 공압 구동을 다루지만, 박사 주지도 자격은 확인하지 못했습니다.</p>
+</section>
+
+<section id="creo">
+  <h2>NYU 로보틱스 지형: CREO</h2>
+  <ul>
+    <li><strong>NYU Center for Robotics and Embodied Intelligence (CREO)</strong>: 2025-12-11 출범. 공동센터장은 Righetti·Chen Feng·Pinto. 370 Jay St에 약 10,000 sq ft 규모. <a href="https://robotics.engineering.nyu.edu/">CREO</a> · <a href="https://robotics.engineering.nyu.edu/people/">구성원</a> · <a href="https://engineering.nyu.edu/news/brooklyn-now-home-major-hub-robotics-and-embodied-intelligence">출범 기사</a></li>
+    <li>소속 연구실: AI4CE(Feng), ADOL(Kim), EMERGE(Vinitsky), GRAIL(Pinto), LAIR(Clark), Machines in Motion(Righetti), Mechatronics·Controls·Robotics(Kapila), Prema(Obayashi), Riviere Robot Lab(Rivière).</li>
+    <li>MAE 주관으로 로보틱스·Embodied AI 교수를 직급 무관 채용 중(2026-09 부임 예정). 2027년 이후 교수진이 더 늘 수 있습니다. <a href="https://jobs.anitab.org/companies/new-york-university-3/jobs/64700860-professor-in-robotics-embodied-ai-open-rank">공고</a></li>
+    <li>"MS in Robotics and Embodied Intelligence"와 박사 트랙 신설이 예고되어 있습니다.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>교수별 프로필</h2>
+
+  <article class="prof" id="obayashi">
+    <div class="prof-head"><h3>1. Nana Obayashi · Prema Lab</h3><span class="pill hi">적합도 높음</span></div>
+    <div class="links"><a href="https://engineering.nyu.edu/faculty/nana-obayashi">프로필</a><a href="https://www.prema-lab.com/">Prema Lab</a><a href="https://scholar.google.com/citations?user=fIczedUAAAAJ">Scholar</a><a href="https://www.prema-lab.com/openings">Openings</a></div>
+    <dl>
+      <dt>소속</dt><dd>MAE 조교수, CREO 핵심 교원. 연구실은 2026-01 개설. 피인용 178, h 9.</dd>
+      <dt>이력</dt><dd>Georgia Tech 항공우주 학사·석사 → Honda Aircraft·Volvo → EPFL 역학 박사(2025, Josie Hughes CREATE Lab). 2025 RSS Pioneer.</dd>
+      <dt>연구 흐름</dt><dd>수동 비대칭 수영체·종이비행기 설계 최적화와 로봇 자동실험 → 소프트 촉수·로봇물고기와 유체-구조 상호작용 → 체화 지능, 사람-로봇 소통, 소프트로봇 연구 방법론.</dd>
+      <dt>지금 하는 것</dt><dd>소프트 몸체와 주변 유체가 실시간으로 주고받는 상호작용. 로봇물고기, 텐던 구동 수중 로봇, 양서 파동형 로봇. 대규모 실험 기반 온라인 최적화와 디지털 트윈.</dd>
+      <dt>대표 논문</dt><dd><ul class="papers">
+        <li>Embodied intelligence paradigm for human-robot communication · <em>Science Robotics</em> 10(105), 2025</li>
+        <li>A democratized bimodal model of research for soft robotics · <em>Science Robotics</em> 10(99), 2025</li>
+        <li>Online hydraulic stiffness modulation of a soft robotic fish tail · <em>Soft Robotics</em> 12(2), 2025</li>
+        <li>ScaFi: length-scalable compliant parametric robotic fish · <em>npj Robotics</em> 4:38, 2026 (<a href="https://doi.org/10.1038/s44182-026-00105-z">DOI</a>)</li>
+        <li>Aesthetics as a core design dimension for human-centred robotic systems · <em>Nature Reviews Bioengineering</em>, 2026</li>
+        <li>Moonshot goals of soft robotics through embodied intelligence · <em>Frontiers in Robotics and AI</em>, 2026</li>
+        <li>WorMa: undulatory robot with CoM regulation via internal fluid redistribution · <em>Adv. Robotics Research</em>, 2026</li>
+        <li>Simple models, real swimming: digital twins for tendon-driven underwater robots · <a href="https://arxiv.org/abs/2602.23283">arXiv:2602.23283</a></li>
+        <li>Mechanoreceptive soft robotic molluscoids · <em>Materials &amp; Design</em>, 2025</li>
+        <li>Control and morphology optimization of passive asymmetric structures for robotic swimming · <em>IEEE RA-L</em> 8(3), 2023</li>
+      </ul></dd>
+      <dt>방법</dt><dd>하드웨어 제작·실험 중심에 데이터 기반 모델링과 최적화를 함께 씀. 학습 비중은 낮음~중간.</dd>
+      <dt>모집</dt><dd>매년 가을 박사 1–2명. MAE 박사과정에 지원하면서 Obayashi를 지망한다고 쓰면 됩니다.</dd>
+      <dt>위험</dt><dd>신임이라 연구비 규모와 지도 이력이 아직 검증되지 않았습니다. 대신 1기생은 연구실 방향을 함께 정하는 위치가 됩니다.</dd>
+    </dl>
+  </article>
+
+  <article class="prof" id="righetti">
+    <div class="prof-head"><h3>2. Ludovic Righetti · Machines in Motion Lab</h3><span class="pill hi">적합도 높음</span></div>
+    <div class="links"><a href="https://engineering.nyu.edu/faculty/ludovic-righetti">프로필</a><a href="https://www.machinesinmotion.org/">연구실</a><a href="https://scholar.google.com/citations?user=LuA1j4oAAAAJ">Scholar</a><a href="https://www.machinesinmotion.org/joining/">Joining</a></div>
+    <dl>
+      <dt>소속</dt><dd>Glenn Y. Louie Professor(2026-04 석좌), ECE·MAE 겸임. MAE 부학과장 겸 대학원 프로그램 디렉터, CREO 공동센터장, IEEE RAS 부회장. 피인용 약 1.08만, h 54.</dd>
+      <dt>이력</dt><dd>EPFL 박사(2008, Ijspeert, CPG 보행) → USC 포닥(Schaal) → MPI-IS 튀빙겐 그룹리더(2012–17, ERC Starting Grant) → NYU(2017–).</dd>
+      <dt>연구 흐름</dt><dd>적응 진동자 보행 → 계층적 역동역학·토크제어 휴머노이드 → 다접촉 최적제어·MPC(Crocoddyl, BiConMP)와 오픈 하드웨어(Solo 사족보행) → 2024년부터 RL·확산모델·월드모델 결합.</dd>
+      <dt>지금 하는 것</dt><dd>1차 미분 기반 모델기반 RL과 월드모델, 빠른 궤적최적화 솔버, MPC 안전·도달가능성, 사람 동작 역강화학습, 3D Gaussian Splatting 기반 경로계획, 로봇과 국제안보 정책.</dd>
+      <dt>대표 논문</dt><dd><ul class="papers">
+        <li>Coupled Local and Global World Models for Efficient First Order RL · CoRL 2026 (<a href="https://arxiv.org/abs/2602.06219">arXiv</a>)</li>
+        <li>Hippo: interior-point/projection solver for constrained trajectory optimization · 2026 (<a href="https://arxiv.org/abs/2603.00871">arXiv</a>)</li>
+        <li>Safety value-constrained MPC · 2026 (<a href="https://arxiv.org/abs/2604.23863">arXiv</a>)</li>
+        <li>First Order Model-Based RL through Decoupled Backpropagation · CoRL 2025 (<a href="https://arxiv.org/abs/2509.00215">arXiv</a>)</li>
+        <li>WorldPlanner: MCTS + MPC with visual world models · 2025 (<a href="https://arxiv.org/abs/2511.03077">arXiv</a>)</li>
+        <li>SoloParkour: constrained RL for visual locomotion · CoRL 2024 (<a href="https://arxiv.org/abs/2409.13678">arXiv</a>)</li>
+        <li>Diffusion-based learning of contact plans for agile locomotion · Humanoids 2024</li>
+        <li>BiConMP · IEEE T-RO 2023</li>
+        <li>고인용: Crocoddyl (ICRA 2020) · Open torque-controlled modular robot (RA-L 2020) · Hierarchical inverse dynamics on a torque-controlled humanoid (Auton. Robots 2016)</li>
+      </ul></dd>
+      <dt>연구비</dt><dd>NSF CISE-ANR RI Small "NERL"(2023-10~2027-09, $544k).</dd>
+      <dt>방법</dt><dd>이론·알고리즘 중심, 학습 비중 증가 중. 하드웨어 실험도 함.</dd>
+      <dt>모집</dt><dd>현재 박사 8명, 방문 1명, 석사 1명. 모집은 연구비에 따라 정해집니다. <strong>ECE나 MAE에 먼저 지원한 뒤</strong> 연락하고, CV·성적표·연구계획서를 PDF 세 개로 따로 보냅니다.</dd>
+    </dl>
+  </article>
+
+  <article class="prof" id="su">
+    <div class="prof-head"><h3>3. Hao Su · BIRO Lab (BME)</h3><span class="pill hi">적합도 높음 · BME 경유</span></div>
+    <div class="links"><a href="https://engineering.nyu.edu/faculty/hao-su">프로필</a><a href="https://haosu-robotics.github.io/">연구실</a><a href="https://biomch-l.isbweb.org/forum/biomch-l-forums/jobs-and-positions/49184-funded-phd-and-postdoc-positions-in-mechatronics-and-reinforcement-learning-in-surgical-and-wearable-robots-at-new-york-university">2025 모집 공고</a></div>
+    <dl>
+      <dt>소속</dt><dd>BME 부교수. 공개 프로필과 MAE 명부에서 MAE 겸임은 확인되지 않습니다. 2025-07 NYU 기사는 CREO 핵심 교원으로 소개했지만 현재 CREO 명단에는 없습니다.</dd>
+      <dt>이력</dt><dd>하얼빈공대 → SUNY Buffalo 석사 → WPI 박사 → Harvard 포닥 → Philips Research → CCNY ME 조교수 → NC State MAE 부교수 → NYU.</dd>
+      <dt>연구 흐름</dt><dd>MRI 유도 수술로봇 → 고토크밀도 준직접구동(QDD) 액추에이터와 경량 엑소스켈레톤 → 시뮬레이션 기반 RL 제어 → 카테터 로봇, 휴머노이드, embodied AI.</dd>
+      <dt>대표 논문</dt><dd><ul class="papers">
+        <li>Experiment-free exoskeleton assistance via learning in simulation · <em>Nature</em> 2024 (<a href="https://doi.org/10.1038/s41586-024-07382-4">DOI</a>)</li>
+        <li>Evolution of humanoid locomotion control · <em>Science Robotics</em> 2026</li>
+        <li>Untethered fluidic engine for high-force soft wearable robots · <em>Adv. Intell. Syst.</em> 2024</li>
+        <li>Physically intelligent autonomous soft robotic maze escaper · <em>Science Advances</em> 2023</li>
+        <li>Adaptive hierarchical origami-based metastructures · <em>Nat. Commun.</em> 2024</li>
+        <li>Compact foldable hip exoskeleton with high-torque-density actuator · <em>IEEE/ASME TMECH</em> 2025</li>
+        <li>PositiveAssist / LegoBot(혈관내 카테터) / MorphoCopter · <em>TMECH</em> 2026</li>
+        <li>고인용: QDD hip exoskeleton (TMECH 2020) · Comfort-centered knee exoskeleton (RA-L 2018) · Spine-inspired continuum soft exoskeleton (RA-L 2019)</li>
+      </ul></dd>
+      <dt>연구비</dt><dd>NSF Growing Convergence Research($3.6M), NIH R01(1R01EB035404), NSF CAREER.</dd>
+      <dt>방법</dt><dd>모터·액추에이터·기구 설계부터 RL 제어까지 전 단계. 하드웨어 비중이 큼.</dd>
+      <dt>모집</dt><dd>2025-11에 2026년 가을 BME 박사 장학생과 포닥을 공고(마감 12-01, hao.su@nyu.edu). 2027년 입학 공고는 아직 확인하지 못했습니다. <strong>MAE 박사과정 학생도 지도할 수 있는지는 본인에게 물어야 합니다.</strong></dd>
+    </dl>
+  </article>
+
+  <article class="prof" id="riviere">
+    <div class="prof-head"><h3>4. Benjamin Rivière · Riviere Robot Lab</h3><span class="pill mid">적합도 중상</span></div>
+    <div class="links"><a href="https://engineering.nyu.edu/faculty/benjamin-riviere">프로필</a><a href="https://sites.google.com/view/riviere-robot-lab/home">연구실</a><a href="https://scholar.google.com/citations?user=8A-sI8MAAAAJ">Scholar</a><a href="https://sites.google.com/view/riviere-robot-lab/join">Join</a></div>
+    <dl>
+      <dt>소속</dt><dd>조교수(2025-09 부임), MAE와 Courant CS 겸임, CREO. 피인용 313, h 8.</dd>
+      <dt>이력</dt><dd>Stanford ME 학사 → Caltech 항공 박사(2024, Soon-Jo Chung, Ballhaus Prize) → Caltech 포닥(Burdick·Yue).</dd>
+      <dt>연구 흐름</dt><dd>다중로봇 학습기반 경로계획(GLAS) → 연속 동역학계용 MCTS와 우주선 고장추정(2024 <em>Science Robotics</em> 2편) → 탐색+학습, 월드모델, 행동 양자화, 모델기반 조작.</dd>
+      <dt>대표 논문</dt><dd><ul class="papers">
+        <li>MCTS with Spectral Expansion for planning with dynamical systems · <em>Science Robotics</em> 9(97), 2024 (표지)</li>
+        <li>Online tree-based planning for active spacecraft fault estimation · <em>Science Robotics</em> 9(93), 2024</li>
+        <li>Spectral decomposition of inverse dynamics for model-based manipulation · ICRA 2026 (<a href="https://arxiv.org/abs/2603.27796">arXiv</a>)</li>
+        <li>Vector-Quantized World Model for robot manipulation · 2026 (<a href="https://arxiv.org/abs/2610.25600">arXiv</a>)</li>
+        <li>World-Action Models for robot learning and control: a survey · 2026 (<a href="https://arxiv.org/abs/2609.16074">arXiv</a>)</li>
+        <li>DISC: LLM inference scaling · NeurIPS 2025</li>
+        <li>고인용: GLAS (RA-L 2020, Best Paper 장려상)</li>
+      </ul></dd>
+      <dt>플랫폼</dt><dd>미세중력 모바일 매니퓰레이터(M3), 쿼드로터.</dd>
+      <dt>모집</dt><dd>현재 박사 3명, 방문 2명, 석사 2명. Tandon ME/Robotics나 Courant CS에 지원해 지망 교수로 적은 뒤, 메일 제목을 정확히 <span class="subject">Interest in Joining RRL: Prospective Ph.D</span>로 보냅니다(제목으로 거름). 학사·석사 졸업자의 방문연구원 경로도 있습니다.</dd>
+      <dt>유의</dt><dd>기구 설계나 소프트로봇과는 거리가 있습니다. 계획·학습 쪽으로 옮겨 가고 싶을 때 맞습니다.</dd>
+    </dl>
+  </article>
+
+  <article class="prof" id="feng">
+    <div class="prof-head"><h3>5. Chen Feng · AI4CE Lab</h3><span class="pill mid">적합도 중상</span></div>
+    <div class="links"><a href="https://engineering.nyu.edu/faculty/chen-feng">프로필</a><a href="https://ai4ce.github.io/">연구실</a><a href="https://scholar.google.com/citations?user=YeG8ZM0AAAAJ">Scholar</a><a href="https://ai4ce.github.io/openings/">Openings</a></div>
+    <dl>
+      <dt>소속</dt><dd>Institute Associate Professor, MAE·CSE·CUE, CREO 공동센터장, NSF CAREER(2023). MAE 박사생 지도 가능. 연구실 27명. 피인용 1.24만, h 48.</dd>
+      <dt>확인 필요</dt><dd>Scholar 소속이 "NYU &amp; Amazon FAR"로 표시되는데, 공식 발표는 찾지 못했습니다.</dd>
+      <dt>연구 흐름</dt><dd>미시간 토목 박사(Kamat, 건설 AR·로봇) → MERL → NYU(2018–). 점군 딥러닝 → 협력 인지·V2X → embodied AI(내비게이션, 조립, 조작).</dd>
+      <dt>대표 논문</dt><dd><ul class="papers">
+        <li>Chain-SLAM · IROS 2026</li>
+        <li>Vision-Force Admittance Learning for peg insertion · RA-L 2026</li>
+        <li>CRAG 3D assembly · ICML 2026</li>
+        <li>Thinking in 360°: Humanoid Visual Search · CVPR 2026</li>
+        <li>GARF fracture reassembly · ICCV 2025 · CityWalker · CVPR 2025 · FusionSense(vision+touch)</li>
+        <li><strong>Zero-shot sim-to-real for pneumatic soft robot 3D proprioceptive sensing</strong> · ICRA 2023 (<a href="https://arxiv.org/abs/2303.04307">arXiv</a>)</li>
+        <li>VoxFormer · CVPR 2023</li>
+      </ul></dd>
+      <dt>방법</dt><dd>학습·3D 비전이 주력. 하드웨어는 중간, 제어 이론은 적음.</dd>
+      <dt>모집</dt><dd>연구실 관심 양식으로 지원. 코딩·실물 로봇 능력과 CVPR/ICRA급 실적을 강하게 봅니다.</dd>
+    </dl>
+  </article>
+
+  <article class="prof" id="kim">
+    <div class="prof-head"><h3>6. Joo H. Kim · Applied Dynamics and Optimization Lab</h3><span class="pill mid">적합도 중</span></div>
+    <div class="links"><a href="https://engineering.nyu.edu/faculty/joo-kim">프로필</a><a href="https://wp.nyu.edu/adol/">연구실</a><a href="https://scholar.google.com/citations?user=A9kRCS0AAAAJ">Scholar</a></div>
+    <dl>
+      <dt>소속</dt><dd>MAE 부교수, ASME Fellow(2025), CREO, NYU-KAIST 연계. 피인용 2,060, h 26.</dd>
+      <dt>연구 흐름</dt><dd>Iowa ME 박사(2006, 디지털 휴먼 예측동역학) → NYU(2009–): 다리 시스템의 균형 안정영역(basin), 외골격 → 휴머노이드 밀림 회복·물체 들기·점프, 로봇 에너지학, 대사 에너지 ML 대리모델.</dd>
+      <dt>대표 논문</dt><dd><ul class="papers">
+        <li>Push recovery with full-order balance stability basins · <em>ASME JMR</em> 2026</li>
+        <li>Direct collocation with conditional constraints · <em>JIRS</em> 2026</li>
+        <li>Balancing humanoid with object mass · arXiv 2607.29625</li>
+        <li>Monopedal jumping basins · <em>JMR</em> 2025</li>
+        <li>Walking energetics: morphology and rotor inertia · IDETC 2025</li>
+        <li>Sacrum-IMU energy expenditure · <em>Sci. Rep.</em> 2025</li>
+      </ul></dd>
+      <dt>모집</dt><dd>박사 1명 + 파트타임 1명, 2026-09에 1명 입학. 공개 모집 문구는 없고, 진행 중인 연구비는 확인하지 못했습니다.</dd>
+      <dt>유의</dt><dd>시뮬레이션·이론 비중이 큽니다. NYU-KAIST 연계는 연락할 때 장점이 될 수 있습니다.</dd>
+    </dl>
+  </article>
+</section>
+
+<section id="others">
+  <h2>보조 후보</h2>
+  <div class="cols">
+    <div><h3>Farshad Khorrami</h3><p>ECE · <a href="https://crrl.engineering.nyu.edu/">CRRL</a></p><p>전방향 옥토로터 무인기 메카트로닉스(ICRA·IROS 2025), CBF 안전제어(TCST 2024), 사족보행 CBF 계획(ICRA 2024), LeCun과 월드모델·VLM 파지(2025–26). 연구의 약 1/3은 보안. MAE 학생이면 공동지도로만 가능.</p></div>
+    <div><h3>Vikram Kapila</h3><p>MAE · <a href="https://mechatronics.engineering.nyu.edu/">Mechatronics Lab</a></p><p>초기에는 우주선 편대비행·포화 제어, 지금은 혼합현실 HRI, IMU 재활, VR 운동게임. 박사과정 1명, PhD Hub 디렉터 보직.</p></div>
+    <div><h3>Maurizio Porfiri</h3><p>MAE·BME · <a href="https://wp.nyu.edu/dsl/">DSL</a></p><p>IPMC 수중체·로봇물고기(과거), 지금은 군집 밀도 제어(TAC 2025, Automatica 2026), 기계 진동자 안정화(<em>Nat. Commun.</em> 2026), 도시과학. 현재 공고는 포닥뿐.</p></div>
+    <div><h3>Christopher Clark</h3><p>MAE Industry Professor · <a href="https://cmclarkk.github.io/LAIR/">LAIR</a></p><p>Kiva Systems 초기 멤버, Apple 로보틱스 팀 리더 출신. 다중 AUV 현장로봇. 박사 지도 여부 미확인. 석사 프로젝트나 산업 멘토로 적합.</p></div>
+    <div><h3>John-Ross Rizzo</h3><p>MAE·BME 겸임, NYU Langone · <a href="https://engineering.nyu.edu/faculty/john-ross-rizzo">프로필</a></p><p>센서·액추에이터 기반 시각장애 보조 웨어러블과 재활. Porfiri와 공동연구. MAE 박사 지도 여부 확인 필요.</p></div>
+    <div><h3>Daniele Panozzo · Denis Zorin</h3><p>Courant CS (기하·시뮬레이션)</p><p>MAE 후보는 아님. 소프트 공압 액추에이터의 미분가능 시뮬레이션 설계로 SIGGRAPH 2024 논문(<a href="https://doi.org/10.1145/3641519.3657467">DOI</a>). 소프트로봇 설계·해석 공동연구 상대.</p></div>
+    <div><h3>Zhong-Ping Jiang</h3><p>ECE</p><p>비선형 제어와 데이터 기반 ADP 이론의 대가(h 약 90). 위원회 위원이나 이론 보강용.</p></div>
+    <div><h3>Eugene Vinitsky</h3><p>CUE · EMERGE</p><p>자율주행 셀프플레이 RL. 메카트로닉스·소프트로봇과는 거리가 멂.</p></div>
+  </div>
+</section>
+
+<section id="apply">
+  <h2>지원 메모</h2>
+  <ol class="steps">
+    <li><strong>연락 순서:</strong> MAE 지원서를 먼저 내고, 그다음 교수에게 메일. Righetti와 Rivière는 연구실 페이지에 이 순서를 명시합니다.</li>
+    <li><strong>메일 구성:</strong> 교수의 2025–26 논문 1–2편을 콕 집어 자기 경험과 연결하고, CV·성적표·연구계획서 PDF를 붙입니다.</li>
+    <li><strong>직접 확인할 것:</strong>
+      <ul>
+        <li>Hao Su: MAE 학생 지도·공동지도가 가능한지</li>
+        <li>Obayashi: 연구비 확보 상황과 첫 학생 규모</li>
+        <li>Chen Feng: Amazon 겸직 여부</li>
+        <li>Pinto: 학생을 받는지</li>
+      </ul>
+    </li>
+    <li><strong>마감:</strong> MAE 박사 마감일은 이번 조사에서 확인하지 않았습니다. 보통 12월 초이니 학과 페이지에서 바로 확인해야 합니다.</li>
+  </ol>
+</section>
+
+<section id="sources">
+  <h2>이적·변동 근거</h2>
+  <ul>
+    <li>Loianno → UC Berkeley: <a href="https://www2.eecs.berkeley.edu/Faculty/Homepages/loiannog.html">Berkeley EECS</a> · <a href="https://tii.ae/team/prof-giuseppe-loianno">TII 프로필</a></li>
+    <li>Atashzar: <a href="https://wp.nyu.edu/meriit/author/sfa7/">MERIIT 소개</a> · <a href="https://scholar.google.ca/citations?user=H6_aG50AAAAJ">Scholar</a></li>
+    <li>Pinto → Meta: <a href="https://the-decoder.com/meta-acquires-assured-robot-intelligence-to-accelerate-humanoid-robot-push/">the-decoder</a> · <a href="https://www.lerrelpinto.com/">홈페이지</a></li>
+    <li>Righetti 석좌: <a href="https://engineering.nyu.edu/news/ludovic-righetti-named-glenn-y-louie-professor-nyu-tandon">NYU 뉴스</a></li>
+    <li>Rivière 부임: <a href="https://engineering.nyu.edu/news/nyu-tandon-welcomes-new-faculty-members-pushing-boundaries-robotics-and-ai">NYU 뉴스</a></li>
+    <li>Obayashi 연구실 개설: <a href="https://engineering.nyu.edu/news/how-nana-obayashi-rethinking-robot-intelligence-body">NYU 뉴스</a></li>
+  </ul>
+</section>
+
+<footer>2026-10-26 웹 조사 기준. "확인하지 못함"이라고 적은 항목은 찾지 못한 것입니다. dblp와 일부 NYU 프로필은 자동 접속이 막혀 있었습니다.</footer>
+</main>
+
+</body>
+</html>
